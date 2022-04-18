@@ -21,6 +21,7 @@ module Console
     end
 
     def help
+      puts 'Remember that you only need to enter the name of the command you want to execute, input will then be asked for the necessary information'
       puts "Available commands: #{@commands}"
       puts 'Command create will create a new file or folder'
       puts 'Command ls will list all files and folders in the current directory'
@@ -44,17 +45,15 @@ module Console
         new_folder = Console::Folder.new(name = input)
         @working_directory = new_folder.name
         folder_array << { name: input, type: 'folder',
-                          metadata: new_folder.metadata, parent: Console::Folder.new(name = 'root') }
+                          metadata: new_folder.metadata, parent: Console::Folder.new(name = 'root').name }
       end
     end
 
     def metadata
       puts 'Enter the name of the file or folder you want to get the metadata from'
       name = gets.chomp
-      folder_array.each do |folder|
-        folder.each do |key, _value|
+      folder_array.each do |key|
           puts "Metadata: #{key[:metadata]}" if key[:name] == name
-        end
       end
     end
 
@@ -63,22 +62,18 @@ module Console
     end
 
     def cdparent
-      folder_array.each do |folder|
-        folder.each do |key, _value|
+      folder_array.each do |key|
           @working_directory = key[:parent] if key[:name] == @working_directory
         end
       end
-    end
 
     def show
       puts 'Enter the name of the file you want to show'
       name = gets.chomp
-      folder_array.each do |folder|
-        folder.each do |key, _value|
+        folder_array.each do |key|
           if key[:name] == name && key[:type] == 'file'
             puts "Title: #{key[:name]}, Metadata: #{key[:metadata]}, Content: #{key[:content]}, Parent: #{key[:parent]}"
           end
-        end
       end
     end
 
@@ -86,14 +81,12 @@ module Console
     def destroy
       puts 'Enter the name of the file or folder you want to destroy'
       name = gets.chomp
-      @folder_array.each do |key|
+      folder_array.each do |key|
         if key[:name] == name && key[:type] == 'file'
           folder_array.delete(key)
         elsif key[:name] == name && key[:type] == 'folder'
+          folder_array.reject! { |f| f[:parent] == name }
           folder_array.delete(key)
-          folder_array.each do |_f|
-            folder_array.delete(k) if k[:parent] == name
-          end
         end
       end
     end
